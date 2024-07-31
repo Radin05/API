@@ -24,10 +24,10 @@ class PemainController extends Controller
     {
         $validate = Validator::make($request->all(), [
             'nama_pemain' => 'required|unique:pemains',
-            'foto' => 'required|image|max:2048',
+            'foto' => 'required|image|max:2048|mimes:png,jpg',
             'tanggal_lahir' => 'required',
             'harga_pasar' => 'required',
-            'posisi' => 'required|in:gk,df,mf,fw|image|mimes:png,jpg',
+            'posisi' => 'required|in:gk,df,mf,fw',
             'negara' => 'required',
             'id_klub' => 'required',
         ]);
@@ -107,8 +107,16 @@ class PemainController extends Controller
         }
 
         try {
-            $path = $request->file('foto')->store('public/pemain'); //menyimpan gambar
+            // $path = $request->file('foto')->store('public/pemain'); //menyimpan gambar
             $pemain = Pemain::findOrFail($id);
+
+            if ($request->hasFile('foto')) {
+                # delete logo/foto
+                Storage::delete([$pemain->foto]);
+                $path = $request->file('foto')->store('public/pemain');
+                $pemain->foto = $path;
+            }
+
             $pemain->nama_pemain = $request->nama_pemain;
             $pemain->foto = $path;
             $pemain->tanggal_lahir = $request->tanggal_lahir;

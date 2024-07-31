@@ -5,15 +5,15 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use App\Models\Klub;
 use Illuminate\Http\Request;
-use Validator;
 use Storage;
+use Validator;
 
 class KlubController extends Controller
 {
     public function index()
     {
         $klub = Klub::latest()->get();
-        return response()->json ([
+        return response()->json([
             'success' => true,
             'massage' => 'daftar klub sepak bola',
             'data' => $klub,
@@ -69,16 +69,16 @@ class KlubController extends Controller
     {
         try {
             $klub = Klub::findOrFail($id);
-             return response()->json([
-                'success'=>true,
-                'message'=>'detail klub',
-                'data'=>$klub,
-            ], 200);
-        }  catch (\Exception $e) {
             return response()->json([
-                'success'=>false,
-                'message'=>'data tidak ada',
-                'errors'=>$e->getMessage(),
+                'success' => true,
+                'message' => 'detail klub',
+                'data' => $klub,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'data tidak ada',
+                'errors' => $e->getMessage(),
             ], 404);
         }
     }
@@ -90,19 +90,19 @@ class KlubController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
         $validate = Validator::make($request->all(), [
             'nama_klub' => 'required',
-            'logo' => 'nullable|images|max:2048',
+            'logo' => 'nullable|image|max:2048',
             'id_liga' => 'required',
         ]);
 
         if ($validate->fails()) {
             return response()->json([
-                'success'=>false,
-                'message'=>'validasi gagal',
-                'errors'=>$validate->errors(),
+                'success' => false,
+                'message' => 'validasi gagal',
+                'errors' => $validate->errors(),
             ], 422);
         }
 
@@ -111,12 +111,14 @@ class KlubController extends Controller
             if ($request->hasFile('logo')) {
                 # delete logo/foto
                 Storage::delete([$klub->logo]);
-                $path = $request->file('logo')->store('public/logo');
+                $path = $request->file('logo')->store('public/klub');
                 $klub->logo = $path;
             }
+
             $klub->nama_klub = $request->nama_klub;
             $klub->id_liga = $request->id_liga;
             $klub->save();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Data klub berhasil diperbaharui',
@@ -143,15 +145,15 @@ class KlubController extends Controller
             $klub = Klub::findOrFail($id);
             Storage::delete($klub->logo);
             $klub->delete();
-             return response()->json([
-                'success'=>true,
-                'message'=>'data '. $klub->nama_klub . ' berhasil terhapus',
-            ], 200);
-        }  catch (\Exception $e) {
             return response()->json([
-                'success'=>false,
-                'message'=>'data tidak ada',
-                'errors'=>$e->getMessage(),
+                'success' => true,
+                'message' => 'data ' . $klub->nama_klub . ' berhasil terhapus',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'data tidak ada',
+                'errors' => $e->getMessage(),
             ], 404);
         }
     }
